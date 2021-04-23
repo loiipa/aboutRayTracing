@@ -4,14 +4,41 @@
 
 #include <iostream>
 
+double	hit_sphere(const point3& center, double radius, const ray& r)
+{
+	//t^2b'b + 2tb'(a-c) + (a-c)'(a-c) -r^2 = 0 에서
+	//oc = 뷰의 원점에서 구의 중심까지의 방향벡터
+	vec3 oc = r.origin() - center;
+	auto a = dot(r.direction(), r.direction());
+	auto b = 2.0 * dot(r.direction(), oc);
+	auto c = dot(oc, oc) - radius * radius;
+	//근의공식? 방향벡터가 구를 통과하는지 안하는지 판별
+	auto discriminant = b * b - 4 * a * c;
+	//벡터가 구를 지나가지 않을 때
+	if (discriminant < 0)
+		return (-1.0);
+	//벡터가 구를 지나갈 때 x방정식
+	else
+		return ((-b - sqrt(discriminant)) / (2.0 * a));
+}
+
 color	ray_color(const ray& r)
 {
+	auto t = hit_sphere(point3(0, 0, -1), 0.5, r);
+	//구의 영역이 경우는 색상 그라데이션 같이 출력
+	if (t > 0.0)
+	{
+		//N을 구의 중심 기준으로 단위벡터를 짠다고 생각하면 될 듯.
+		vec3 N = unit_vector(r.at(t) - vec3(0, 0, -1));
+		return (0.5 * color(N.x() + 1, N.y() + 1, N.z() + 1));
+	}
+
 	//y값이 달라지면 색도 같이 따라 바뀜. x, z는 상관없음.
 	vec3 unit_direction = unit_vector(r.direction());
 	//unit_direction.y() -> -1 ~ 1
 	//t값을 0 ~ 1로 만들기 위한 작업임.
 	//auto t = 0.5 * (unit_direction.y() + 1.0);
-	auto t = 0.5 * ((unit_direction.x() + unit_direction.y())/2 + 1.0);
+	t = 0.5 * (unit_direction.y() + 1.0);
 	//t=0 하얀색 -> t=1 blue값이 높은 색상
 	//결국 하얀색 ~ 파란색으로 그라데이션이 만들어짐.
 	//return (1.0 - t) * color (1.0, 1.0, 1.0) - t * color (0.5, 0.7, 1.0);
