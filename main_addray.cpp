@@ -9,17 +9,19 @@ double	hit_sphere(const point3& center, double radius, const ray& r)
 	//t^2b'b + 2tb'(a-c) + (a-c)'(a-c) -r^2 = 0 에서
 	//oc = 뷰의 원점에서 구의 중심까지의 방향벡터
 	vec3 oc = r.origin() - center;
-	auto a = dot(r.direction(), r.direction());
-	auto b = 2.0 * dot(r.direction(), oc);
-	auto c = dot(oc, oc) - radius * radius;
+	auto a = r.direction().length_sqared;
+	//auto b = 2.0 * dot(r.direction(), oc);
+	auto half_b = dot(r.direction(), oc);
+	auto c = oc.length_sqared() - radius * radius;
 	//근의공식? 방향벡터가 구를 통과하는지 안하는지 판별
-	auto discriminant = b * b - 4 * a * c;
+	//auto discriminant = b * b - 4 * a * c;
+	auto discriminant = half_b * half_b - a * c;
 	//벡터가 구를 지나가지 않을 때
 	if (discriminant < 0)
 		return (-1.0);
 	//벡터가 구를 지나갈 때 x방정식
 	else
-		return ((-b - sqrt(discriminant)) / (2.0 * a));
+		return ((-half_b - sqrt(discriminant)) / a);
 }
 
 color	ray_color(const ray& r)
@@ -28,7 +30,7 @@ color	ray_color(const ray& r)
 	//구의 영역이 경우는 색상 그라데이션 같이 출력
 	if (t > 0.0)
 	{
-		//N을 구의 중심 기준으로 단위벡터를 짠다고 생각하면 될 듯.
+		//N을 구의 중심 기준으로 단위벡터를 이용해서 색을 표현하려고 하는 듯.
 		vec3 N = unit_vector(r.at(t) - vec3(0, 0, -1));
 		return (0.5 * color(N.x() + 1, N.y() + 1, N.z() + 1));
 	}
