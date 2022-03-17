@@ -40,9 +40,15 @@ t_ray	ray_primary(t_camera *cam, double u, double v)
 t_color3	ray_color(t_ray *r, t_sphere *sphere)
 {
 	double	t;
+	t_vec3	n;
 
-	if (hit_sphere(sphere, r))
-		return (color3(1, 0, 0));
+	t = hit_sphere(sphere, r);
+	if (t > 0.0)
+	{
+		// 구와 내 눈의 시선이 만나는 지점의 법선
+		n = vunit(vminus(ray_at(r, t), sphere->center));
+		return (vmult(color3(n.x + 1, n.y + 1, n.z + 1), 0.5));
+	}
 	else
 	{
 		t = 0.5 * (r->dir.y + 1.0);
