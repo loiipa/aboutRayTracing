@@ -10,8 +10,10 @@ SRCS_NAME = main.c\
 			object_create.c\
 			scene.c\
 			print.c\
-			hit/hit_sphere.c\
-			ray/ray.c
+			hit_sphere.c\
+			normal.c\
+			ray.c\
+
 
 BASIC = $(addprefix $(SRCS_DIR), $(SRCS_NAME))
 
