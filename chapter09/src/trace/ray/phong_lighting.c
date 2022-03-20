@@ -7,6 +7,18 @@ t_vec3	reflect(t_vec3 v, t_vec3 n)
 
 }
 
+t_bool	in_shadow(t_object *objs, t_ray light_ray, double light_len)
+{
+	t_hit_record	rec;
+
+	rec.tmin = 0;
+	rec.tmax = light_len;
+	// 보통은 카메라 시점이라면, 이건 빛의 시점
+	if (hit(objs, &light_ray, &rec))
+		return (TRUE);
+	return (FALSE);
+}
+
 t_color3	point_light_get(t_scene *scene, t_light *light)
 {
 	t_color3	diffuse;
@@ -19,9 +31,18 @@ t_color3	point_light_get(t_scene *scene, t_light *light)
 	double		ksn;
 	double		ks;
 	double		brightness;
+	double		light_len;
+	t_ray		light_ray;
 
 	// 교점에서 출발하여 광원을 향하는 벡터(정규화 됨)
-	light_dir = vunit( vminus(light->origin, scene->rec.p) );
+	// light_dir = vunit( vminus(light->origin, scene->rec.p) );
+	light_dir = vminus(light->origin, scene->rec.p);
+	light_len = vlength(light_dir);
+	light_ray = ray(vplus(scene->rec.p, vmult(scene->rec.normal, EPSILON)), light_dir);
+	if (in_shadow(scene->world, light_ray, light_len))
+		return (color3(0, 0, 0));
+	light_dir = vunit(light_dir);
+
 	// cosΘ는 Θ 값이 90도 일 때 0이고, Θ가 둔각이 되면 음수가 되므로 0.0보다 작은 경우는 0.0으로 대체
 	kd = fmax(vdot(scene->rec.normal, light_dir), 0.0);
 	diffuse = vmult(light->light_color, kd);
