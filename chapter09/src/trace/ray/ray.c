@@ -1,5 +1,14 @@
 #include "trace.h"
 
+t_hit_record	record_init(void)
+{
+	t_hit_record	record;
+
+	record.tmin = EPSILON;
+	record.tmax = INFINITY;
+	return (record);
+}
+
 //ray 생성자(정규화 된 ray)
 t_ray	ray(t_point3 orig, t_vec3 dir)
 {
@@ -37,21 +46,17 @@ t_ray	ray_primary(t_camera *cam, double u, double v)
 	ray.dir = vunit(vec3(x, y, z));
 	return (ray);
 }
-t_color3	ray_color(t_ray *r, t_sphere *sphere)
+t_color3	ray_color(t_scene *scene)
 {
 	double	t;
-	t_vec3	n;
 
-	t = hit_sphere(sphere, r);
-	if (t > 0.0)
-	{
-		// 구와 내 눈의 시선이 만나는 지점의 법선
-		n = vunit(vminus(ray_at(r, t), sphere->center));
-		return (vmult(color3(n.x + 1, n.y + 1, n.z + 1), 0.5));
-	}
+	scene->rec = record_init();
+	// 5장에서는 리턴값이 t 그자체였다면, 지금은 t값을 rec에 저장한다고 보면 될듯?
+	if (hit(scene->world, &scene->ray, &scene->rec))
+		return (phong_lighting(scene));
 	else
 	{
-		t = 0.5 * (r->dir.y + 1.0);
+		t = 0.5 * (scene->ray.dir.y + 1.0);
 		return ( vplus(vmult(color3(1, 1, 1), 1.0 - t), vmult(color3(0.5, 0.7, 1.0), t)) );
 	}
 }
